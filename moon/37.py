@@ -1,11 +1,22 @@
-from typing import Any
 import pygame, random
 
 
-image_rock = pygame.image.load('C:\\Users\\St2\\Desktop\\Данияр\\stone.png')
+
+
+image_rock = pygame.image.load('moon/stone.png')
 sizes = [[64, 64], [96, 96], [128, 128], [160, 160], [198, 198]]
 rocks = []
-image_laser = pygame.image.load('C:\\Users\\St2\\Desktop\\Данияр\\laser.png')
+image_laser = pygame.image.load('moon/laser.png')
+image_exp = (pygame.image.load('moon/Explosion/regularExplosion00.png'),
+              pygame.image.load('moon/Explosion/regularExplosion01.png'),
+              pygame.image.load('moon/Explosion/regularExplosion02.png'),
+              pygame.image.load('moon/Explosion/regularExplosion03.png'),
+              pygame.image.load('moon/Explosion/regularExplosion04.png'),
+              pygame.image.load('moon/Explosion/regularExplosion05.png'),
+              pygame.image.load('moon/Explosion/regularExplosion06.png'),
+              pygame.image.load('moon/Explosion/regularExplosion07.png'),
+              pygame.image.load('moon/Explosion/regularExplosion08.png'))
+image_star = pygame.image.load('moon/star.png')
 
 for size in sizes:
     rocks.append(pygame.transform.scale(image_rock, size))
@@ -15,22 +26,24 @@ ekran = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 FPS = 60
 
+
+
 running = True
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
-
+RECORD = 0
 class Player(pygame.sprite.Sprite,):
     def __init__(self, pose):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('C:\\Users\\St2\\Desktop\\Данияр\\spaceship.png')
+        self.image = pygame.image.load('moon/spaceship.png')
         self.rect = self.image.get_rect()
         self.speed = 15
         self.shoot_delay = 100
         self.last_shoot = pygame.time.get_ticks()
         self.rect.center = pose
     
-        
+    
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -83,7 +96,23 @@ class Bullet(pygame.sprite.Sprite):
             coords = coords[0], coords[1] + self.dy
         self.rect.center = coords
 
+class power_up(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = image_star
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.rect = self.image.get_rect()
+        self.rect.center = (random.randint(50, 1230), random.randint(50, 1230))
+        self.speed = 10
 
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.y >= 720:
+            self.kill()
+        if pygame.sprite.spritecollide(p, Power_up, True,):
+            self.kill()
+
+ 
 class Rock(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -128,42 +157,87 @@ class Rock(pygame.sprite.Sprite):
             coords = coords[0], coords[1] + self.dy
         self.rect.center = coords
         self.rotate()
-
-
         
-r = Rock()
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, coords):
+        super().__init__()
+        self.stage = 0 
+        self.image = image_exp[self.stage]
+        self.rect = self.image.get_rect()
+        self.rect.center = coords
+        self.delay = 75 
+        self.last_stage = pygame.time.get_ticks()
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_stage >= self.delay:
+            if self.stage == 8:
+                self.kill()
+            else:
+                self.stage += 1
+                self.last_stage = now
+                self.image = image_exp[self.stage]
+        
+
 p = Player((640, 600))
 player = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
-all_sprites.add(p, r)
+all_sprites.add(p)
 player.add(p)
 bullets = pygame.sprite.Group()
 shootables = pygame.sprite.Group()
-shootables.add(r)
+Power_up = pygame.sprite.Group()
+
 
 def spawn():
     for i in range(10 - len(shootables)):
         t = Rock()
         all_sprites.add(t)
         shootables.add(t)
-spawn
+spawn()
+
+def spawn_up():
+    for i in range(1 - len(Power_up)):
+        w = power_up()
+        Power_up.add(w)
+        all_sprites.add(w)
+        if pygame.sprite.groupcollide(player, Power_up, True, True):
+            break
 
 
 pygame.init()
+font = pygame.font.SysFont('ARIAL', 25)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+    spawn_up()
     spawn()
     ekran.fill(BLACK)
     all_sprites.draw(ekran)
     all_sprites.update()
-    hit_player = pygame.sprite.spritecollide(p, shootables, False, pygame.sprite.collide_circle)
-    if hit_player:
+    player_hit = pygame.sprite.spritecollide(p, shootables, False, pygame.sprite.collide_circle)
+    if player_hit:
         running = False
+
+
+    hit = pygame.sprite.groupcollide(shootables, bullets, True, True)
+    for i in hit:
+        t = Explosion(i.rect.center)
+        all_sprites.add(t)
+        RECORD += 10
+
+    caption = font.render(str(RECORD),True, 'WHITE')
+
+    all_sprites.draw(ekran)
+    ekran.blit(caption, (10, 10))
 
     pygame.display.flip()
     clock.tick(FPS)
+    pygame.display.update()
+    pygame.display.flip()
+
+
 
 pygame.quit()

@@ -102,7 +102,7 @@ class power_up(pygame.sprite.Sprite):
         self.image = image_star
         self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect()
-        self.rect.center = (random.randint(50, 1230), random.randint(50, 1230))
+        self.rect.center = (random.randint(50, 1230), random.randint(50, 50))
         self.speed = 10
 
     def update(self):
@@ -112,7 +112,6 @@ class power_up(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(p, Power_up, True,):
             self.kill()
 
- 
 class Rock(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -225,7 +224,7 @@ while running:
     hit = pygame.sprite.groupcollide(shootables, bullets, True, True)
     for i in hit:
         t = Explosion(i.rect.center)
-        all_sprites.add(t)
+        all_sprites.add(w)
         RECORD += 10
 
     caption = font.render(str(RECORD),True, 'WHITE')
@@ -237,6 +236,7 @@ while running:
     clock.tick(FPS)
     pygame.display.update()
     pygame.display.flip()
+
 
 
 

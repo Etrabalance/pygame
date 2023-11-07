@@ -1,0 +1,34 @@
+body {
+    font-family: sans-serif;
+}
+
+h1 {
+    font-size: 24px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+form {
+    margin-top: 20px;
+}
+
+input {
+    width: 200px;
+}
+
+.todo {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.completed {
+    text-decoration: line-through;
+}
